@@ -1,7 +1,6 @@
 #!/usr/bin/python3
-""
-A function that returns a list of lists of integers
-""
+# A function that returns a list of lists of integers
+
 def pascal_triangle(n):
     if n <= 0:
         return []
@@ -21,9 +20,3 @@ def pascal_triangle(n):
         triangle.append(row)
 
     return triangle
-
-# Test the function with n = 5 (you can replace this with any desired value).
-n = 5
-result = pascal_triangle(n)
-for row in result:
-    print(row)
