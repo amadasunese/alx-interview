@@ -2,36 +2,43 @@
 '''Log parsing'''
 
 
+import re
 import sys
+from collections import defaultdict
 
-cache = {'200': 0, '301': 0, '400': 0, '401': 0,
-         '403': 0, '404': 0, '405': 0, '500': 0}
-total_size = 0
-counter = 0
+# Initialize variables to store metrics
+total_file_size = 0
+status_code_count = defaultdict(int)
 
 try:
+    line_number = 0
+
+    # Regular expression to match the expected input format
+    log_format = re.compile(r'(\d+\.\d+\.\d+\.\d+) - \[.*\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)')
+
     for line in sys.stdin:
-        line_list = line.split(" ")
-        if len(line_list) > 4:
-            code = line_list[-2]
-            size = int(line_list[-1])
-            if code in cache.keys():
-                cache[code] += 1
-            total_size += size
-            counter += 1
+        line_number += 1
 
-        if counter == 10:
-            counter = 0
-            print('File size: {}'.format(total_size))
-            for key, value in sorted(cache.items()):
-                if value != 0:
-                    print('{}: {}'.format(key, value))
+        # Try to match the line with the expected format
+        match = log_format.match(line)
+        if match:
+            ip, status_code, file_size = match.groups()
 
-except Exception as err:
-    pass
+            # Update total file size
+            total_file_size += int(file_size)
 
-finally:
-    print('File size: {}'.format(total_size))
-    for key, value in sorted(cache.items()):
-        if value != 0:
-            print('{}: {}'.format(key, value))
+            # Update status code count
+            if status_code in {'200', '301', '400', '401', '403', '404', '405', '500'}:
+                status_code_count[status_code] += 1
+
+        # Print statistics after every 10 lines
+        if line_number % 10 == 0:
+            print(f'Total file size: {total_file_size}')
+            for code in sorted(status_code_count.keys()):
+                print(f'{code}: {status_code_count[code]}')
+
+except KeyboardInterrupt:
+    # Handle keyboard interruption
+    print(f'Total file size: {total_file_size}')
+    for code in sorted(status_code_count.keys()):
+        print(f'{code}: {status_code_count[code]}')
