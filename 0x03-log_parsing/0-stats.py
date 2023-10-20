@@ -7,13 +7,23 @@ import re
 
 # Initialize variables to store metrics
 total_file_size = 0
-status_code_counts = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+status_code_counts = {
+    200: 0,
+    301: 0,
+    400: 0,
+    401: 0,
+    403: 0,
+    404: 0,
+    405: 0,
+    500: 0
+}
 line_count = 0
 
 try:
     for line in sys.stdin:
         # Parse the line using regular expressions
-        match = re.match(r'^(\d+\.\d+\.\d+\.\d+) - \[([^\]]+)\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$', line)
+        pattern = r'^(\d+\.\d+\.\d+\.\d+) - \[([^\]]+)\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$'
+        match = re.match(pattern, line)
         if match:
             ip_address, date, status_code, file_size = match.groups()
             status_code = int(status_code)
