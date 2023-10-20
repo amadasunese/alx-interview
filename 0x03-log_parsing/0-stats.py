@@ -1,52 +1,44 @@
 #!/usr/bin/python3
-"""
-log parsing
-"""
+"""Log Parser"""
 import sys
-import re
 
-# Initialize variables to store metrics
-total_file_size = 0
-status_code_counts = {
-    200: 0,
-    301: 0,
-    400: 0,
-    401: 0,
-    403: 0,
-    404: 0,
-    405: 0,
-    500: 0
-}
-line_count = 0
 
-try:
-    for line in sys.stdin:
-        # Parse the line using regular expressions
-        pattern = r'^(\d+\.\d+\.\d+\.\d+) - \[([^\]]+)\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$'
-        match = re.match(pattern, line)
-        if match:
-            ip_address, date, status_code, file_size = match.groups()
-            status_code = int(status_code)
-            file_size = int(file_size)
+if __name__ == '__main__':
+    file_size = [0]
+    status_codes = {200: 0, 301: 0, 400: 0, 401: 0,
+                    403: 0, 404: 0, 405: 0, 500: 0}
 
-            # Update metrics
-            total_file_size += file_size
-            status_code_counts[status_code] += 1
-            line_count += 1
+    def print_stats():
+        """ Print statistics """
+        print('File size: {}'.format(file_size[0]))
+        for key in sorted(status_codes.keys()):
+            if status_codes[key]:
+                print('{}: {}'.format(key, status_codes[key]))
 
-            # Check if it's time to print statistics
-            if line_count % 10 == 0:
-                print(f"Total file size: {total_file_size}")
-                for code in sorted(status_code_counts.keys()):
-                    if status_code_counts[code] > 0:
-                        print(f"{code}: {status_code_counts[code]}")
+    def parse_line(line):
+        """ Checks the line for matches """
+        try:
+            line = line[:-1]
+            word = line.split(' ')
+            # File size is last parameter on stdout
+            file_size[0] += int(word[-1])
+            # Status code comes before file size
+            status_code = int(word[-2])
+            # Move through dictionary of status codes
+            if status_code in status_codes:
+                status_codes[status_code] += 1
+        except BaseException:
+            pass
 
-except KeyboardInterrupt:
-    # Handle CTRL+C interruption by printing statistics
-    print(f"Total file size: {total_file_size}")
-    for code in sorted(status_code_counts.keys()):
-        if status_code_counts[code] > 0:
-            print(f"{code}: {status_code_counts[code}")
-
-except Exception as e:
-    print(f"Error: {e}")
+    linenum = 1
+    try:
+        for line in sys.stdin:
+            parse_line(line)
+            """ print after every 10 lines """
+            if linenum % 10 == 0:
+                print_stats()
+            linenum += 1
+    except KeyboardInterrupt:
+        print_stats()
+        raise
+    print_stats()
