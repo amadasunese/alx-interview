@@ -2,48 +2,32 @@
 '''
 A script that reads stdin line by line
 '''
-import re
-import random
 import sys
-from time import sleep
-import datetime
 
+# Define status codes
+STATUS_CODES = [200, 301, 400, 401, 403, 404, 405, 500]
 
-# Initialize variables to store metrics
-datetime.datetime.now(),
-random.choice([200, 301, 400, 401, 403, 404, 405, 500]),
-random.randint(1, 1024)
+# Initialize metrics
+total_file_size = 0
+num_lines_by_status_code = {status_code: 0 for status_code in STATUS_CODES}
 
-try:
-    for line in sys.stdin:
-        """
-        Parse the line using regular expressions
-        """
-        match = re.match(r'^(\d{1,3}\n.\d{1,3}\n.\d{1,3}\n.\d{1,3}) - \[([^\]]+)] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)$', line)
+# Read lines from stdin
+for line in sys.stdin:
+    # Split line into fields
+    fields = line.split()
 
-        if match:
-            ip_address, date, status_code, file_size = match.groups()
-            status_code = int(status_code)
-            file_size = int(file_size)
+    # Check if line is in the expected format
+    if len(fields) != 6 or not fields[4].isdigit() or not fields[5].isdigit():
+        continue
 
-            # Update metrics
-            total_file_size += file_size
-            status_code_counts[status_code] += 1
-            line_count += 1
+    # Update metrics
+    total_file_size += int(fields[5])
+    num_lines_by_status_code[int(fields[4])] += 1
 
-            # Check if it's time to print statistics
-            if line_count % 10 == 0:
-                print(f"Total file size: {total_file_size}")
-                for code in sorted(status_code_counts.keys()):
-                    if status_code_counts[code] > 0:
-                        print(f"{code}: {status_code_counts[code]}")
-
-except KeyboardInterrupt:
-    # Handle CTRL+C interruption by printing statistics
-    print(f"Total file size: {total_file_size}")
-    for code in sorted(status_code_counts.keys()):
-        if status_code_counts[code] > 0:
-            print(f"{code}: {status_code_counts[code]}")
-
-except Exception as e:
-    print(f"Error: {e}")
+    # Print metrics if every 10 lines or keyboard interruption
+    if line_number % 10 == 0 or sys.stdin.isatty():
+        print("Total file size: {}".format(total_file_size))
+        for status_code in sorted(num_lines_by_status_code.keys()):
+            num_lines = num_lines_by_status_code[status_code]
+            if num_lines > 0:
+                print("{}: {}".format(status_code, num_lines))
