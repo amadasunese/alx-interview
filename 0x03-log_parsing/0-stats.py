@@ -1,33 +1,37 @@
 #!/usr/bin/python3
-'''
-A script that reads stdin line by line
-'''
+'''a script that reads stdin line by line and computes metrics'''
+
+
 import sys
 
-# Define status codes
-STATUS_CODES = [200, 301, 400, 401, 403, 404, 405, 500]
+cache = {'200': 0, '301': 0, '400': 0, '401': 0,
+         '403': 0, '404': 0, '405': 0, '500': 0}
+total_size = 0
+counter = 0
 
-# Initialize metrics
-total_file_size = 0
-num_lines_by_status_code = {status_code: 0 for status_code in STATUS_CODES}
+try:
+    for line in sys.stdin:
+        line_list = line.split(" ")
+        if len(line_list) > 4:
+            code = line_list[-2]
+            size = int(line_list[-1])
+            if code in cache.keys():
+                cache[code] += 1
+            total_size += size
+            counter += 1
 
-# Read lines from stdin
-for line in sys.stdin:
-    # Split line into fields
-    fields = line.split()
+        if counter == 10:
+            counter = 0
+            print('File size: {}'.format(total_size))
+            for key, value in sorted(cache.items()):
+                if value != 0:
+                    print('{}: {}'.format(key, value))
 
-    # Check if line is in the expected format
-    if len(fields) != 6 or not fields[4].isdigit() or not fields[5].isdigit():
-        continue
+except Exception as err:
+    pass
 
-    # Update metrics
-    total_file_size += int(fields[5])
-    num_lines_by_status_code[int(fields[4])] += 1
-
-    # Print metrics if every 10 lines or keyboard interruption
-    if line_number % 10 == 0 or sys.stdin.isatty():
-        print("Total file size: {}".format(total_file_size))
-        for status_code in sorted(num_lines_by_status_code.keys()):
-            num_lines = num_lines_by_status_code[status_code]
-            if num_lines > 0:
-                print("{}: {}".format(status_code, num_lines))
+finally:
+    print('File size: {}'.format(total_size))
+    for key, value in sorted(cache.items()):
+        if value != 0:
+            print('{}: {}'.format(key, value))
