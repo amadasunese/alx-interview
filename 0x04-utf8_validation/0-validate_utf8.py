@@ -1,8 +1,12 @@
 #!/usr/bin/python3
+"""
+A method that determines valid UTF-8 encoding
+"""
 
 
 def validUTF8(data):
-    # Initialize a variable to keep track of the number of remaining bytes
+    """Initialize a variable to keep track of the number of remaining bytes
+    """
     remaining_bytes = 0
 
     # Iterate through each integer in the data list
@@ -24,13 +28,8 @@ def validUTF8(data):
             if (num >> 6) == 0b10:
                 remaining_bytes -= 1
             else:
-                return False  # Invalid continuation byte
+                return False
 
     # If there are remaining bytes after processing all integers, it's invalid
     return remaining_bytes == 0
 
-
-# Example usage:
-data = [197, 130, 1]  # Replace this with your list of integers
-result = validUTF8(data)
-print(result)
