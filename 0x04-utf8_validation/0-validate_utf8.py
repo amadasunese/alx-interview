@@ -1,53 +1,36 @@
 #!/usr/bin/python3
-"""
-A method that determine a valid UTF-8 encoding.
-"""
+
+
 def validUTF8(data):
-  """
-  Determines if a given data set represents a valid UTF-8 encoding.
+    # Initialize a variable to keep track of the number of remaining bytes
+    remaining_bytes = 0
 
-  Args:
-    data: A list of integers, where each integer represents one byte of data.
+    # Iterate through each integer in the data list
+    for num in data:
+        # Check if the number is a valid UTF-8 start byte
+        if remaining_bytes == 0:
+            if (num >> 7) == 0b0:
+                remaining_bytes = 0
+            elif (num >> 5) == 0b110:
+                remaining_bytes = 1
+            elif (num >> 4) == 0b1110:
+                remaining_bytes = 2
+            elif (num >> 3) == 0b11110:
+                remaining_bytes = 3
+            else:
+                return False
+        else:
+            # Check if the current number is a valid continuation byte
+            if (num >> 6) == 0b10:
+                remaining_bytes -= 1
+            else:
+                return False  # Invalid continuation byte
 
-  Returns:
-    True if data is a valid UTF-8 encoding, else return False.
-  """
+    # If there are remaining bytes after processing all integers, it's invalid
+    return remaining_bytes == 0
 
-  # Check if the data is empty.
-  if not data:
-    return False
 
-  # Initialize the state of the decoder.
-  state = 0
-
-  # Iterate over the data.
-  for byte in data:
-    # Get the 8 least significant bits of the byte.
-    byte = byte & 0xFF
-
-    # If the state is 0, then we are expecting the start of a new character.
-    if state == 0:
-      # If the byte is a start byte, then transition to the next state.
-      if byte >= 0xC0 and byte <= 0xDF:
-        state = 1
-      # If the byte is not a start byte, then the data is invalid.
-      else:
-        return False
-    # If the state is not 0, then we are expecting a continuation byte.
-    else:
-      # If the byte is not a continuation byte, then the data is invalid.
-      if byte < 0x80 or byte > 0xBF:
-        return False
-      # Otherwise, transition to the next state.
-      state += 1
-
-      # If we have reached the end of a character, then reset the state.
-      if state == 4:
-        state = 0
-
-  # If we reach the end of the data while in a non-zero state, then the data is invalid.
-  if state != 0:
-    return False
-
-  # Otherwise, the data is a valid UTF-8 encoding.
-  return True
+# Example usage:
+data = [197, 130, 1]  # Replace this with your list of integers
+result = validUTF8(data)
+print(result)
