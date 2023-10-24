@@ -32,4 +32,3 @@ def validUTF8(data):
 
     # If there are remaining bytes after processing all integers, it's invalid
     return remaining_bytes == 0
-
