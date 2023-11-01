@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """N queens"""
 
 import sys
@@ -7,7 +7,9 @@ import sys
 def is_safe(board, row, col):
     """Check if it's safe to place a queen at the specified row and col."""
     for i in range(col):
-        if board[i] == row or board[i] - i == row - col or board[i] + i == row + col:
+        if (board[i] == row or
+                board[i] - i == row - col or
+                board[i] + i == row + col):
             return False
     return True
 
@@ -17,6 +19,7 @@ def solve_nqueens(n, board, col):
     if col >= n:
         print([[i, board[i]] for i in range(n)])
         return
+
     for i in range(n):
         if is_safe(board, i, col):
             board[col] = i
