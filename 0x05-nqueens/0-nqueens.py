@@ -41,6 +41,7 @@ def solve_nqueens(board, col, n):
             solve_nqueens(board, col + 1, n)
             board[i][col] = 0  # backtrack
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: nqueens N")
