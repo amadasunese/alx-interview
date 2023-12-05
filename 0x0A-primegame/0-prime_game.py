@@ -5,49 +5,62 @@ Prime Game
 
 
 def isWinner(x, nums):
-    def is_prime(num):
-        if num < 2:
-            return False
-        for i in range(2, int(num ** 0.5) + 1):
-            if num % i == 0:
-                return False
-        return True
+  """
+  Determines the winner of a game where players choose prime numbers and remove
+  them and their multiples from a set of consecutive integers.
 
-    def get_next_prime(numbers):
-        for num in numbers:
-            if is_prime(num):
-                return num
-        return None
+  Args:
+    x: Number of rounds played.
+    nums: List of integers for each round.
 
-    def play_game(round_numbers):
-        current_player = "Maria"
-        while True:
-            prime = get_next_prime(round_numbers)
-            if prime is None:
-                return current_player
-            round_numbers = [num for num in round_numbers if num % prime != 0]
-            current_player = "Ben" if current_player == "Maria" else "Maria"
+  Returns:
+    None if the winner cannot be determined, "Maria" if Maria wins,
+    "Ben" if Ben wins.
+  """
 
-    maria_wins = 0
-    ben_wins = 0
+  maria_wins = 0
+  ben_wins = 0
 
-    for n in nums:
-        winner = play_game(list(range(1, n + 1)))
-        if winner == "Maria":
-            maria_wins += 1
-        elif winner == "Ben":
-            ben_wins += 1
+  for i in range(x):
+    n = nums[i]
+    primes = [j for j in range(2, n + 1) if is_prime(j)]
 
-    if maria_wins > ben_wins:
-        return "Maria"
-    elif ben_wins > maria_wins:
-        return "Ben"
+    maria_turn = True
+    while primes:
+      if maria_turn:
+        # Maria picks a prime
+        prime = primes.pop(0)
+        for j in range(prime, n + 1, prime):
+          if j in primes:
+            primes.remove(j)
+        maria_turn = False
+      else:
+        # Ben picks a prime
+        prime = primes.pop(0)
+        for j in range(prime, n + 1, prime):
+          if j in primes:
+            primes.remove(j)
+        maria_turn = True
+
+    if maria_turn:
+      ben_wins += 1
     else:
-        return None
+      maria_wins += 1
 
-# Example usage:
-x = 3
-nums = [4, 5, 1]
-result = isWinner(x, nums)
-print(result)
+  if maria_wins > ben_wins:
+    return "Maria"
+  elif ben_wins > maria_wins:
+    return "Ben"
+  else:
+    return None
 
+def is_prime(n):
+  """
+  Checks if a number is prime.
+  """
+  if n <= 1:
+    return False
+  for i in range(2, int(n**0.5) + 1):
+    if n % i == 0:
+      return False
+  return True
